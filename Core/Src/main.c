@@ -43,8 +43,8 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint16 BottonMatrixState = 0;
-uint32 BMTimestamp = 0;
+uint16_t BottonMatrixState = 0;
+uint32_t BMTimestamp = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -261,7 +261,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 GPIO_TypeDef* BottonmatrixPort[8] = {GPIOA,GPIOB,GPIOB,GPIOB,GPIOA,GPIOC,GPIOB,GPIOA};
-uint16_t BottonmatrixPin[8] = {GPIO_Pin_10,GPIO_Pin_3,GPIO_Pin_5,GPIO_Pin_4,GPIO_Pin_9,GPIO_Pin_7,GPIO_Pin_6,GPIO_Pin_7};
+uint16_t BottonmatrixPin[8] = {GPIO_PIN_10,GPIO_PIN_3,GPIO_PIN_5,GPIO_PIN_4,GPIO_PIN_9,GPIO_PIN_7,GPIO_PIN_6,GPIO_PIN_7};
 uint8_t BottonMatrixLine = 0;
 
 void BottonMatrixUpdate()
