@@ -44,6 +44,12 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
+
+uint16_t clear = 0;
+uint16_t temp = 0;
+uint16_t BTT = 0;
+GPIO_TypeDef *pad[11] = {0,0,0,0,0,0,0,0,0,0,0};
+
 uint16_t ButtonMatrixState = 0;
 uint32_t ButtonMatrixTimestamp = 0;
 
@@ -97,17 +103,89 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	while (1)
-	{
+	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
 		ButtonMatrixUpdate();
-		if (ButtonMatrixState == 1)
-		{
-
+		if (HAL_GetTick() - BTT >= 500) {
+			if (ButtonMatrixState == 1) {
+				pad[temp] = 7;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 2) {
+				pad[temp] = 8;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 4) {
+				pad[temp] = 9;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 8) {
+				pad[0] = 0;
+				pad[1] = 0;
+				pad[2] = 0;
+				pad[3] = 0;
+				pad[4] = 0;
+				pad[5] = 0;
+				pad[6] = 0;
+				pad[7] = 0;
+				pad[8] = 0;
+				pad[9] = 0;
+				pad[10] = 0;
+				temp = 0;
+			}
+			if (ButtonMatrixState == 16) {
+				pad[temp] = 4;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 32) {
+				pad[temp] = 5;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 64) {
+				pad[temp] = 6;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 256) {
+				pad[temp] = 1;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 512) {
+				pad[temp] = 2;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 1024) {
+				pad[temp] = 3;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+			if (ButtonMatrixState == 4096) {
+				pad[temp] = 0;
+				temp += 1;
+				BTT = HAL_GetTick();
+			}
+//			if (ButtonMatrixState == 32768) {
+//				if(temp == 11)
+//				{
+//					if()
+//					{
+//
+//					}
+//				}
+//				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+//			}
 		}
+
 	}
   /* USER CODE END 3 */
 }
@@ -222,16 +300,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD2_Pin PA7 PA9 */
-  GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_7|GPIO_PIN_9;
+  /*Configure GPIO pin : LD2_Pin */
+  GPIO_InitStruct.Pin = LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA7 PA9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PC7 */
   GPIO_InitStruct.Pin = GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -250,7 +335,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PB6 */
   GPIO_InitStruct.Pin = GPIO_PIN_6;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -264,28 +349,30 @@ uint16_t ButtonMatrixPin[8] = { GPIO_PIN_10, GPIO_PIN_3, GPIO_PIN_5, GPIO_PIN_4,
 GPIO_PIN_9, GPIO_PIN_7, GPIO_PIN_6, GPIO_PIN_7 };
 uint8_t ButtonMatrixRow = 0;
 
-void ButtonMatrixUpdate()
-{
+void ButtonMatrixUpdate() {
 
-	if (HAL_GetTick() - ButtonMatrixTimestamp >= 100) {
+	if (HAL_GetTick() - ButtonMatrixTimestamp >= 50) {
 		ButtonMatrixTimestamp = HAL_GetTick();
 		int i;
 		for (i = 0; i < 4; ++i) {
 			GPIO_PinState Pinstate = HAL_GPIO_ReadPin(ButtonMatrixPort[i],
 					ButtonMatrixPin[i]);
 			if (Pinstate == GPIO_PIN_RESET) {
-				ButtonMatrixState |= (uint16_t)0x1 << (i + ButtonMatrixRow * 4);
+				ButtonMatrixState |= (uint16_t) 0x1
+						<< (i + ButtonMatrixRow * 4);
 			} else {
-				ButtonMatrixState &=
-						~((uint16_t)0x1 << (i + ButtonMatrixRow * 4));
+				ButtonMatrixState &= ~((uint16_t) 0x1
+						<< (i + ButtonMatrixRow * 4));
 			}
 		}
 		uint8_t NowOutputPin = ButtonMatrixRow + 4;
-		HAL_GPIO_WritePin(ButtonMatrixPort[NowOutputPin],ButtonMatrixPin[NowOutputPin], GPIO_PIN_SET);
+		HAL_GPIO_WritePin(ButtonMatrixPort[NowOutputPin],
+				ButtonMatrixPin[NowOutputPin], GPIO_PIN_SET);
 		ButtonMatrixRow = (ButtonMatrixRow + 1) % 4;
 
 		uint8_t NextOutputPin = ButtonMatrixRow + 4;
-		HAL_GPIO_WritePin(ButtonMatrixPort[NextOutputPin],ButtonMatrixPin[NextOutputPin], GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(ButtonMatrixPort[NextOutputPin],
+				ButtonMatrixPin[NextOutputPin], GPIO_PIN_RESET);
 
 	}
 }
