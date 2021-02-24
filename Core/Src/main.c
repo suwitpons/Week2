@@ -43,12 +43,12 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
-
-uint16_t clear = 0;
+uint16_t press = 0;
+uint16_t count = 0;
 uint16_t temp = 0;
 uint16_t BTT = 0;
 GPIO_TypeDef *pad[11] = {0,0,0,0,0,0,0,0,0,0,0};
+uint16_t A[11] = {6,2,3,4,0,5,0,0,0,5,7};
 
 uint16_t ButtonMatrixState = 0;
 uint32_t ButtonMatrixTimestamp = 0;
@@ -138,6 +138,9 @@ int main(void)
 				pad[9] = 0;
 				pad[10] = 0;
 				temp = 0;
+				count = 0;
+				press = 0;
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 			}
 			if (ButtonMatrixState == 16) {
 				pad[temp] = 4;
@@ -174,16 +177,27 @@ int main(void)
 				temp += 1;
 				BTT = HAL_GetTick();
 			}
-//			if (ButtonMatrixState == 32768) {
-//				if(temp == 11)
-//				{
-//					if()
-//					{
-//
-//					}
-//				}
-//				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
-//			}
+			if (ButtonMatrixState == 32768)
+			{
+				BTT = HAL_GetTick();
+				press += 1;
+				if(temp == 11)
+					{
+					int j;
+					for (j = 0; j < 11; ++j)
+					{
+						if(pad[j] == A[j])
+						{
+							count += 1;
+							if(count == 11 & press == 1)
+								{
+									HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+								}
+						}
+					}
+					}
+
+			}
 		}
 
 	}
