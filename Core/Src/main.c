@@ -157,6 +157,15 @@ int main(void)
 				temp += 1;
 				BTT = HAL_GetTick();
 			}
+			if (ButtonMatrixState == 128) {
+				pad[temp - 1] = 0;
+				press += 1;
+				if(temp < 1)
+					temp = 0;
+				else
+					temp -= 1;
+				BTT = HAL_GetTick();
+			}
 			if (ButtonMatrixState == 256) {
 				pad[temp] = 1;
 				temp += 1;
