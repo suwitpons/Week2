@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -43,8 +43,10 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint16_t BottonMatrixState = 0;
-uint32_t BMTimestamp = 0;
+
+uint16_t ButtonMatrixState = 0;
+uint32_t ButtonMatrixTimestamp = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -52,8 +54,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-//scan
-void BottonMatrixUpdate();
+void ButtonMatrixUpdate();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -96,14 +97,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1)
+	{
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  //fuction botton
 
-  }
+		ButtonMatrixUpdate();
+		if (ButtonMatrixState == 1)
+		{
+
+		}
+	}
   /* USER CODE END 3 */
 }
 
@@ -217,23 +222,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pins : LD2_Pin PA7 PA9 */
+  GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_7|GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA7 PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PC7 */
   GPIO_InitStruct.Pin = GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -252,7 +250,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PB6 */
   GPIO_InitStruct.Pin = GPIO_PIN_6;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -260,33 +258,35 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-GPIO_TypeDef* BottonmatrixPort[8] = {GPIOA,GPIOB,GPIOB,GPIOB,GPIOA,GPIOC,GPIOB,GPIOA};
-uint16_t BottonmatrixPin[8] = {GPIO_PIN_10,GPIO_PIN_3,GPIO_PIN_5,GPIO_PIN_4,GPIO_PIN_9,GPIO_PIN_7,GPIO_PIN_6,GPIO_PIN_7};
-uint8_t BottonMatrixLine = 0;
+GPIO_TypeDef *ButtonMatrixPort[8] = { GPIOA, GPIOB, GPIOB, GPIOB, GPIOA, GPIOC,
+GPIOB, GPIOA };
+uint16_t ButtonMatrixPin[8] = { GPIO_PIN_10, GPIO_PIN_3, GPIO_PIN_5, GPIO_PIN_4,
+GPIO_PIN_9, GPIO_PIN_7, GPIO_PIN_6, GPIO_PIN_7 };
+uint8_t ButtonMatrixRow = 0;
 
-void BottonMatrixUpdate()
+void ButtonMatrixUpdate()
 {
-	if(HAL_GetTick()- BMTimestamp >= 100)
-	{
-		BMTimestamp = HAL_GetTick();
-		int i ;
-		for(i = 0;i<4;i++)
-		{
-			GPIO_PinState Pinstate = HAL_GPIO_ReadPin(BottonmatrixPort[i], BottonmatrixPin[i]);
-			if(Pinstate == GPIO_PIN_RESET) // Botton Press
-			{
-				BottonMatrixState |= (uint16_t)0x1 << (i+BottonMatrixLine + 4);
-			}
-			else
-			{
-				BottonMatrixState &= ~((uint16_t)0x1 << (i+BottonMatrixLine + 4));
+
+	if (HAL_GetTick() - ButtonMatrixTimestamp >= 100) {
+		ButtonMatrixTimestamp = HAL_GetTick();
+		int i;
+		for (i = 0; i < 4; ++i) {
+			GPIO_PinState Pinstate = HAL_GPIO_ReadPin(ButtonMatrixPort[i],
+					ButtonMatrixPin[i]);
+			if (Pinstate == GPIO_PIN_RESET) {
+				ButtonMatrixState |= (uint16_t)0x1 << (i + ButtonMatrixRow * 4);
+			} else {
+				ButtonMatrixState &=
+						~((uint16_t)0x1 << (i + ButtonMatrixRow * 4));
 			}
 		}
-		uint8_t NowOutputPin = BottonMatrixLine + 4 ;
-		HAL_GPIO_WritePin(BottonmatrixPort[NowOutputPin], BottonmatrixPin[NowOutputPin],GPIO_PIN_SET);
-		BottonMatrixLine = (BottonMatrixLine + 1) % 4;
-		uint8_t NextOutputPin = BottonMatrixLine + 4;
-		HAL_GPIO_WritePin(BottonmatrixPort[NextOutputPin], BottonmatrixPin[NextOutputPin],GPIO_PIN_RESET);
+		uint8_t NowOutputPin = ButtonMatrixRow + 4;
+		HAL_GPIO_WritePin(ButtonMatrixPort[NowOutputPin],ButtonMatrixPin[NowOutputPin], GPIO_PIN_SET);
+		ButtonMatrixRow = (ButtonMatrixRow + 1) % 4;
+
+		uint8_t NextOutputPin = ButtonMatrixRow + 4;
+		HAL_GPIO_WritePin(ButtonMatrixPort[NextOutputPin],ButtonMatrixPin[NextOutputPin], GPIO_PIN_RESET);
+
 	}
 }
 /* USER CODE END 4 */
@@ -298,11 +298,10 @@ void BottonMatrixUpdate()
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
